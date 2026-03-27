@@ -1,0 +1,40 @@
+# Documentos de trabajo internos
+mejoras.md
+explicaciones.md
+
+# Datos grandes — no versionar
+data/raw/
+airbnb-listings-extract.csv
+*.csv
+
+# Reportes de profiling (muy pesados)
+*.html
+
+# Modelos serializados
+models/
+*.pkl
+*.joblib
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.ipynb_checkpoints/
+
+# Entornos virtuales
+.env
+.venv/
+env/
+venv/
+
+# IDEs
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+#documentos anteriores
+entrega.ipynb
+entrega2.ipynb

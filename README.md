@@ -3,119 +3,104 @@
 ## Autor
 Rubén Cerezo
 
-## Objetivo de la práctica
+---
 
-El objetivo de esta práctica es abordar un problema de Machine Learning realista siguiendo la metodología y las buenas prácticas explicadas durante el curso.
+## Objetivo
 
-El problema planteado es de regresión, y consiste en predecir el precio de un alojamiento de Airbnb a partir de un conjunto de datos reales obtenido mediante técnicas de scraping.
+Predecir el precio de un alojamiento de Airbnb en Madrid a partir de datos reales obtenidos mediante scraping. Es un problema de **regresión supervisada**.
 
-Tal y como se especifica en el enunciado oficial de la práctica, no se buscan resultados espectaculares, sino un proceso coherente, bien razonado y sin errores conceptuales graves, priorizando la correcta aplicación de las técnicas vistas en clase.
+El foco de la práctica está en aplicar correctamente la metodología ML (sin data leakage, con evaluación honesta) más que en maximizar métricas.
 
-He mantenido la entrega 1 en caso de que se quiera comprobar el primer intento de esta práctica, pero realmente el archivo importante es la entrega 2. 
-Además, pese a que es requisito entregar el notebook con las celdas ejecutadas, no he ejecutado la celda con el iprofiler ya que este hacía imposible subir el archivo a github (ocupaba demasiado espacio)
-Por último, en este segundo intento, he llevado a cabo el análisis exploratorio de los datos, observándolos y eliminando las columnas que no tenían relevancia, pero sólo haciendo la división X_TRAIN, X_TEST, Y_TRAIN, Y_TEST ANTES de iniciar cambios reales en el dataset como la inputación de los valores nulos, para así evitar el data leakage 
 ---
 
 ## Estructura del repositorio
 
-airbnb-listings-extract.csv  
-entrega.ipynb  
-entrega2.ipynb        ← Notebook principal de la práctica  
-Práctica ML.pdf       ← Enunciado oficial  
-profiling_report.html  
-profiling_report_madrid.html  
-.gitattributes  
-.git/  
+```
+machine_learning_final/
+│
+├── data/
+│   ├── raw/               ← CSV original de Airbnb
+│   ├── processed/         ← datos limpios tras el EDA
+│   └── splits/            ← X_train, X_val, X_test, y_train, y_val, y_test
+│
+├── notebooks/
+│   ├── 01_eda.ipynb               ← análisis exploratorio
+│   ├── 02_data_preparation.ipynb  ← limpieza, splits, preprocesado
+│   ├── 03_modeling.ipynb          ← entrenamiento y evaluación
+│   └── 04_conclusions.ipynb       ← comparativa final y conclusiones
+│
+├── src/
+│   └── utils.py           ← funciones reutilizables (métricas, gráficos, I/O)
+│
+├── models/                ← modelos serializados (.joblib)
+│
+├── reports/
+│   ├── figures/           ← gráficos exportados
+│   └── profiling/         ← informes HTML de ydata-profiling
+│
+├── requirements.txt
+└── README.md
+```
 
-El desarrollo completo de la práctica se encuentra en el notebook entrega2.ipynb.
-
----
-
-## Conjunto de datos
-
-El dataset utilizado contiene datos reales de Airbnb, lo que implica:
-
-- Presencia de valores nulos  
-- Distribuciones no uniformes  
-- Posibles outliers  
-- Variables heterogéneas (numéricas y categóricas)  
-
-Este carácter realista obliga a realizar un análisis y limpieza más profundos que en datasets académicos simplificados, tal y como se indica en el enunciado de la práctica.
-
----
-
-## Metodología seguida
-
-El notebook entrega2.ipynb sigue los pasos recomendados en el enunciado oficial.
-
-### 1. Preparación de los datos
-
-- División del dataset en train / test  
-- Separación de variables predictoras y variable objetivo (precio)  
+Los notebooks están pensados para ejecutarse **en orden** (01 → 02 → 03 → 04). Cada uno carga los outputs del anterior desde disco.
 
 ---
 
-### 2. Análisis exploratorio de datos (EDA)
+## Metodología
 
-- Inspección inicial del dataset (head, describe, dtypes)  
-- Análisis de valores nulos  
-- Detección de outliers  
-- Estudio de correlaciones  
-- Apoyo visual mediante gráficas  
+### 1. Análisis exploratorio (`01_eda.ipynb`)
+- Inspección inicial: tipos, nulos, distribuciones
+- Detección de outliers por IQR
+- Análisis de correlaciones con el precio
+- Informe automático con ydata-profiling
 
-Además, se incluyen informes automáticos de profiling para facilitar el análisis exploratorio:
+### 2. Preparación de datos (`02_data_preparation.ipynb`)
+- Filtrado a alojamientos de Madrid y limpieza de columnas
+- **Split train / validation / test (70 / 15 / 15)** — antes de cualquier transformación
+- Imputación, one-hot encoding y escalado ajustados **solo sobre train**, aplicados a val y test
+- Transformación logarítmica del precio (`log1p`) para reducir el sesgo de la distribución
 
-- profiling_report.html  
-- profiling_report_madrid.html  
+### 3. Modelado (`03_modeling.ipynb`)
+Se entrenan y comparan cinco modelos con GridSearchCV:
 
----
+| Modelo | Notas |
+|--------|-------|
+| Lasso | regularización L1, selección implícita de features |
+| Ridge | regularización L2 |
+| ElasticNet | combinación L1 + L2 |
+| Random Forest | ensemble de árboles, grid amplio para controlar overfitting |
+| Gradient Boosting | boosting secuencial, suele superar a RF en tabular data |
 
-### 3. Preprocesamiento
+Métricas reportadas: **RMSE, MAE y R²** sobre train, validation y test.
 
-Durante esta fase se aplican distintas técnicas de preparación de los datos, entre ellas:
-
-- Eliminación de variables poco relevantes o problemáticas  
-- Tratamiento de valores perdidos  
-- Selección de variables basada en correlación y modelos  
-- Inputación de valores nulos con distintas opciones según sea necesario (0, moda, media, mediana...)
-
-
----
-
-### 4. Modelado
-
-Se entrenan y evalúan distintos modelos de regresión siguiendo una aproximación incremental:
-
-- Lasso
-- Ridge
-- Random Forest
-
-El objetivo no es maximizar una métrica concreta, sino comparar el comportamiento de los modelos y detectar posibles problemas de overfitting o underfitting.
+### 4. Conclusiones (`04_conclusions.ipynb`)
+- Tabla comparativa de métricas de todos los modelos
+- Importancia de features del mejor modelo
+- Análisis de residuos
+- Reflexión cualitativa sobre los resultados
 
 ---
 
-### 5. Conclusiones
+## Resultados
 
-La práctica finaliza con una breve reflexión escrita en la que se resumen:
-
-- Los procedimientos llevados a cabo.
-- Resumen de resultados obtenidos por cada modelo
-- Comparativa y explicación de las métricas obtenidas por cada modelo 
-
-Siguiendo las indicaciones del enunciado, estas conclusiones son cualitativas y razonadas, no puramente numéricas.
+El mejor modelo es **Gradient Boosting**, que obtiene el RMSE y R² más competitivos en el conjunto de test manteniendo un gap train/test razonable.
 
 ---
 
-## Tecnologías utilizadas
+## Tecnologías
 
-- Python  
-- pandas  
-- numpy  
-- matplotlib  
-- seaborn  
-- scikit-learn  
-- Jupyter Notebook
-- Ydata_profiling  
+- Python 3
+- pandas, numpy
+- matplotlib, seaborn
+- scikit-learn
+- ydata-profiling
+- joblib
 
---  
+Versiones exactas en `requirements.txt`.
 
+---
+
+## Notas
+
+- Los archivos CSV de datos y los HTML de profiling están excluidos del repositorio (`.gitignore`) por su tamaño.
+- `random_state=3` fijado en todos los puntos de aleatoriedad para reproducibilidad total.
