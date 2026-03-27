@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3:*)",
+      "Bash(python3 -c \":*)",
+      "Bash(1:*)",
+      "Bash(tee /tmp/full_notebook.txt)",
+      "Bash(mkdir -p data/raw data/processed src models reports/figures reports/profiling)",
+      "Bash(mv airbnb-listings-extract.csv data/raw/)",
+      "Bash(mv house_data_clean.csv data/processed/)",
+      "Bash(mv profiling_report.html reports/profiling/)",
+      "Bash(mv profiling_report_madrid.html reports/profiling/)"
+    ]
+  }
+}
